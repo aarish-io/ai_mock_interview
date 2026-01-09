@@ -8,8 +8,19 @@ export async function GET(){
 }
 
 export async function POST(request:Request){
-    const {type,role,level,techstack,amount,userid} = await request.json();
     try {
+        const body = await request.json();
+
+        // Support both old parameter names and new ones from Vapi Tool
+        const type = body.type || body.interviewType || "Mixed";
+        const role = body.role || body.jobRole || "Developer";
+        const level = body.level || body.experienceLevel || "Junior";
+        const techstack = body.techstack || body.techStack || "JavaScript";
+        const amount = body.amount || body.numberOfQuestions || 5;
+        const userid = body.userid || body.userId || "";
+
+        console.log("Generating interview with params:", { type, role, level, techstack, amount, userid });
+
         const {text:questions} = await generateText({
             model:google("gemini-2.0-flash-001"),
             prompt:`Prepare questions for a job interview.
@@ -27,6 +38,8 @@ export async function POST(request:Request){
         `,
         });
 
+        console.log("Generated questions:", questions);
+
         const interview = {
             role,type,level,
             techstack: techstack,
@@ -42,7 +55,7 @@ export async function POST(request:Request){
         return Response.json({success:true},{status:200});
     }
     catch (e){
-        console.log(e);
-        return Response.json({success:false, e},{status:500});
+        console.error("Error generating interview:", e);
+        return Response.json({success:false, error: String(e)},{status:500});
     }
 }

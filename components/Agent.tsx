@@ -5,7 +5,6 @@ import Image from "next/image";
 import {cn} from "@/lib/utils";
 import {useRouter} from "next/navigation";
 import {vapi} from "@/lib/vapi.sdk";
-import {generator, interviewer} from "@/constants";
 
 enum CallStatus{
     INACTIVE = "INACTIVE",
@@ -19,16 +18,43 @@ interface SavedMessages{
     content: string;
 }
 
+// Your Vapi Assistant ID from dashboard (via env variable)
+const VAPI_ASSISTANT_ID = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID!;
 
 const Agent = ({userName,userId,type,interviewId,questions}:AgentProps) => {
     const router = useRouter();
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
     const [messages, setMessages] = useState<SavedMessages[]>([])
+    const [callEnded, setCallEnded] = useState(false);
+    const [micPermission, setMicPermission] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
+
+    // Check microphone permission on mount
+    useEffect(() => {
+        const checkMicPermission = async () => {
+            try {
+                const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+                setMicPermission(result.state as 'granted' | 'denied' | 'prompt');
+                result.onchange = () => {
+                    setMicPermission(result.state as 'granted' | 'denied' | 'prompt');
+                };
+            } catch (error) {
+                console.log("Could not check mic permission:", error);
+            }
+        };
+        checkMicPermission();
+    }, []);
 
     useEffect(() => {
-        const onCallStart =()=> setCallStatus(CallStatus.ACTIVE);
-        const onCallEnd =()=> setCallStatus(CallStatus.FINISHED);
+        const onCallStart =()=> {
+            console.log("Call started");
+            setCallStatus(CallStatus.ACTIVE);
+        };
+        const onCallEnd =()=> {
+            console.log("Call ended");
+            setCallStatus(CallStatus.FINISHED);
+            setCallEnded(true);
+        };
         const onMessage = (message:Message)=>{
             if(message.type ==='transcript' && message.transcriptType === 'final'){
                 const newMessage = { role: message.role, content: message.transcript };
@@ -38,7 +64,9 @@ const Agent = ({userName,userId,type,interviewId,questions}:AgentProps) => {
         const onSpeechStart = ()=> setIsSpeaking(true);
         const onSpeechEnd = ()=> setIsSpeaking(false);
 
-        const onError = (error:Error)=> console.log("Error:", error);
+        const onError = (error:Error)=> {
+            console.log("Vapi Error:", error);
+        };
 
         vapi.on('call-start', onCallStart);
         vapi.on('call-end', onCallEnd);
@@ -58,71 +86,50 @@ const Agent = ({userName,userId,type,interviewId,questions}:AgentProps) => {
 
     }, []);
 
-    const handleGenrateFeedback = async(messages:SavedMessages[])=>{
-        console.log('generate feedback here');
-
-        const {success,id} = {
-            success:true,
-            id:'feedback-id'
-        }
-
-        if(success && id){
-            router.push(`/interview/${interviewId}/feedback`)
-        }
-        else{
-            console.error("Failed to generate feedback");
-            router.push('/');
-        }
-
-    }
-
+    // Handle redirect after call ends - with a delay to allow user to see what happened
     useEffect(() => {
-        if (callStatus === CallStatus.FINISHED) {
-            if(type=='generate'){
+        if (callStatus === CallStatus.FINISHED && callEnded) {
+            const timer = setTimeout(() => {
                 router.push('/');
-            }
-            else{
-                handleGenrateFeedback(messages);
-            }
+            }, 3000);
+            return () => clearTimeout(timer);
         }
-
-    }, [messages, callStatus, type, userId]);
+    }, [callStatus, callEnded, router]);
 
     const handleCall = async () => {
         setCallStatus(CallStatus.CONNECTING);
+        setCallEnded(false);
 
-        if(type==='generate'){
-            await vapi.start(
-                undefined,
-                {
-                    variableValues: {
-                        username: userName,
-                        userid: userId,
-                    },
-                    clientMessages: ["transcript"],
-                    serverMessages: [],
-                },
-                undefined,
-                generator);
+        // Request microphone permission first
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop());
+            setMicPermission('granted');
+        } catch (error) {
+            console.error("Microphone permission denied:", error);
+            setMicPermission('denied');
+            setCallStatus(CallStatus.INACTIVE);
+            alert("Microphone access is required for the call. Please allow microphone access and try again.");
+            return;
         }
-        else{
-            let formattedQuestions='';
-            if(questions){
-                formattedQuestions = questions.map((question)=> `- ${question}`).join('\n');
-            }
 
-            await vapi.start(interviewer,{
-                variableValues:{
-                    questions:formattedQuestions,
+        // Using Assistant ID from Vapi dashboard
+        try {
+            await vapi.start(VAPI_ASSISTANT_ID, {
+                variableValues: {
+                    username: userName,
+                    userid: userId
                 }
-            })
+            });
+        } catch (error) {
+            console.error("Failed to start Vapi call:", error);
+            setCallStatus(CallStatus.INACTIVE);
         }
-
-
     }
-    
+
     const handleDisconnect = async()=>{
         setCallStatus(CallStatus.FINISHED);
+        setCallEnded(true);
         await vapi.stop();
     }
 
@@ -149,7 +156,21 @@ const Agent = ({userName,userId,type,interviewId,questions}:AgentProps) => {
                 </div>
             </div>
 
-            {messages.length>0 &&(
+            {/* Microphone status indicator */}
+            {micPermission === 'denied' && (
+                <div className="text-center p-3 bg-red-900/50 rounded-lg mb-4">
+                    <p className="text-red-300">⚠️ Microphone access denied. Please enable it in browser settings.</p>
+                </div>
+            )}
+
+            {/* Show call ended message */}
+            {callEnded && (
+                <div className="text-center p-4 bg-dark-200 rounded-lg mb-4">
+                    <p className="text-light-100">Call ended. Redirecting to home...</p>
+                </div>
+            )}
+
+            {messages.length>0 && !callEnded && (
                 <div className="transcript-border">
                     <div className="transcript">
                         <p key={latestMessage} className={cn('transition-opacity duration-500 opacity-0','animate-fade-in opacity-100')}>
@@ -160,11 +181,11 @@ const Agent = ({userName,userId,type,interviewId,questions}:AgentProps) => {
 
             <div className="w-full justify-center flex">
                 {callStatus !== CallStatus.ACTIVE ? (
-                    <button className="relative btn-call" onClick={handleCall}>
+                    <button className="relative btn-call" onClick={handleCall} disabled={callEnded}>
                         <span className={cn('absolute animate-ping rounded-full opacity-75', callStatus !== CallStatus.CONNECTING && 'hidden')}/>
 
                         <span>
-                            {isCallInactiveOrFinished ? 'Call' : '....'}
+                            {callEnded ? 'Redirecting...' : (isCallInactiveOrFinished ? 'Call' : '....')}
                         </span>
 
                     </button>
@@ -178,3 +199,4 @@ const Agent = ({userName,userId,type,interviewId,questions}:AgentProps) => {
     )
 }
 export default Agent
+
