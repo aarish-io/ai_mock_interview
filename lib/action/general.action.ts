@@ -1,6 +1,9 @@
 import {db} from "@/firebase/admin";
 
 export async function getInterviewsByUserId(userId:string):Promise<Interview[] | null>{
+    // Return empty array if userId is undefined/null
+    if (!userId) return [];
+
     const interviews = await db.collection('interviews')
         .where('userId','==',userId)
         .orderBy('createdAt','desc')
@@ -16,6 +19,19 @@ export async function getInterviewsByUserId(userId:string):Promise<Interview[] |
 export async function getLatestInterviews(params:GetLatestInterviewsParams):Promise<Interview[] | null>{
     const {userId,limit=20} = params;
 
+    // If no userId, get all finalized interviews
+    if (!userId) {
+        const interviews = await db.collection('interviews')
+            .orderBy('createdAt','desc')
+            .where('finalized','==',true)
+            .limit(limit)
+            .get();
+
+        return interviews.docs.map((doc)=>({
+            id : doc.id,
+            ...doc.data(),
+        })) as Interview[];
+    }
 
     const interviews = await db.collection('interviews')
         .orderBy('createdAt','desc')
