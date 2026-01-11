@@ -1,6 +1,21 @@
 import { generateObject } from "ai";
-import { googleVertex } from "@ai-sdk/google-vertex";
+import { createVertex } from "@ai-sdk/google-vertex";
 import { z } from "zod";
+
+// Parse service account credentials from environment variable
+const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON || "{}");
+
+// Create Vertex AI provider with explicit credentials
+const vertex = createVertex({
+    project: credentials.project_id,
+    location: "us-central1",
+    googleAuthOptions: {
+        credentials: {
+            client_email: credentials.client_email,
+            private_key: credentials.private_key,
+        },
+    },
+});
 
 interface GenerateInterviewQuestionsParams {
     role: string;
@@ -15,7 +30,7 @@ export async function generateInterviewQuestions(params: GenerateInterviewQuesti
 
     try {
         const { object } = await generateObject({
-            model: googleVertex("gemini-1.5-flash"),
+            model: vertex("gemini-1.5-flash"),
             schema: z.object({
                 questions: z.array(z.string()).min(1).max(amount * 2),
             }),
@@ -32,11 +47,8 @@ export async function generateInterviewQuestions(params: GenerateInterviewQuesti
         }
     } catch (error) {
         console.error("Error using Vertex AI generateObject:", error);
-        // Throw error to let the caller handle it or see the failure logs. 
-        // We are strictly avoiding the old fallback logic as per instructions.
         throw error;
     }
 
-    // Default return (should rarely receive here if generateObject works or throws)
     return [];
 }
