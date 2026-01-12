@@ -15,7 +15,7 @@ export async function generateInterviewQuestions(params: GenerateInterviewQuesti
 
     try {
         const { object } = await generateObject({
-            model: google("models/gemini-1.5-flash-latest"),
+            model: google("models/gemini-2.5-flash"),
             schema: z.object({
                 questions: z.array(z.string()).min(1).max(amount * 2),
             }),
@@ -38,7 +38,7 @@ export async function generateInterviewQuestions(params: GenerateInterviewQuesti
     // This provides extra robustness
     try {
         const { text: questions } = await generateText({
-            model: google("models/gemini-1.5-flash-latest"),
+            model: google("models/gemini-2.5-flash"),
             prompt: `Generate exactly ${amount} interview questions for a ${level} ${role} position.
     Tech stack: ${techstack.join(", ")}.
     Question type: ${type}.
