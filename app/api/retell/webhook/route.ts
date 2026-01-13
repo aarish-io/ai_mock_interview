@@ -1,6 +1,7 @@
 import { generateInterviewQuestions } from "@/lib/actions/interview.action";
 import { db } from "@/firebase/admin";
 import { getRandomInterviewCover } from "@/lib/utils";
+import { generateInterviewFeedback } from "@/lib/actions/feedback.action";
 
 export async function POST(request: Request) {
     try {
@@ -56,7 +57,42 @@ export async function POST(request: Request) {
                 });
 
                 console.log("Interview created successfully:", docRef.id);
-            } else {
+            }
+
+            else if (metadata?.userId && metadata?.type === "interview") {
+                const interviewId = metadata.interviewId;
+
+                const interviewRef = db.collection("interviews").doc(interviewId);
+                const interviewDoc = await interviewRef.get();
+                const interviewData = interviewDoc.data();
+
+                if(!interviewData){
+                    console.log("Interview not found:", interviewId);
+                    return Response.json({ success: false, error: "Interview not found" });
+                }
+
+                console.log("generating feedback for interview id:",interviewId);
+
+                const feedback = await generateInterviewFeedback({
+                    questions:interviewData.questions,
+                    role:interviewData.role,
+                    level:interviewData.level,
+                    transcript:body.call?.transcript,
+                })
+                console.log("Generated feedback:",feedback);
+
+                await interviewRef.update({
+                    feedback,
+                    transcript,
+                    status:"completed",
+                    completedAt:new Date().toISOString(),
+                })
+
+                console.log("Interview updated successfully:", interviewId);
+            }
+
+
+            else {
                 console.log("Skipping interview creation. REASON:", {
                     hasUserId: !!metadata?.userId,
                     isGenerateType: metadata?.type === "generate",

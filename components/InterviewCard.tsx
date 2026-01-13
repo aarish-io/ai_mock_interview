@@ -1,15 +1,14 @@
 import React from 'react'
 import dayjs from "dayjs";
 import Image from "next/image";
-import {getRandomInterviewCover} from "@/lib/utils";
+import { getRandomInterviewCover } from "@/lib/utils";
 import Link from "next/link";
-import {Button} from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import DisplayTechIcons from "@/components/DisplayTechIcons";
 
-const InterviewCard = ({id,userId,role,type,techstack,createdAt}:InterviewCardProps) => {
+const InterviewCard = ({ id, userId, role, type, techstack, createdAt, feedback }: InterviewCardProps) => {
 
-    const feedback = null as Feedback | null;
-    const normalisedType = /mix/gi.test(type)?"Mixed":type;
+    const normalisedType = /mix/gi.test(type) ? "Mixed" : type;
     const formattedDate = dayjs(feedback?.createdAt || createdAt || Date.now()).format('MMM D, YYYY');
     return (
         <div className="card-border max-sm:w-full min-h-96 w-[360px] ">
@@ -19,7 +18,7 @@ const InterviewCard = ({id,userId,role,type,techstack,createdAt}:InterviewCardPr
                         <p className="badge-text">{normalisedType}</p>
                     </div>
                     <Image src={getRandomInterviewCover()} alt="cover" width={90} height={90}
-                           className="object-fit rounded-full size-[90px]"/>
+                        className="object-fit rounded-full size-[90px]" />
 
                     <h3 className="mt-5 capitalize">
                         {role} Interview
@@ -27,27 +26,27 @@ const InterviewCard = ({id,userId,role,type,techstack,createdAt}:InterviewCardPr
 
                     <div className="flex flex-row gap-5 mt-3">
                         <div className="flex flex-row gap-2">
-                            <Image src="/calendar.svg"  alt="calendar" width={22} height={22}/>
+                            <Image src="/calendar.svg" alt="calendar" width={22} height={22} />
                             <p>{formattedDate}</p>
                         </div>
 
                         <div className="flex flex-row gap-2">
-                            <Image src="/star.svg" alt="star" width={22} height={22}/>
-                            <p>{feedback?.totalScore || "---"}/100</p>
+                            <Image src="/star.svg" alt="star" width={22} height={22} />
+                            <p>{feedback?.overallScore || "---"}/100</p>
                         </div>
                     </div>
 
                     <p className="line-clamp-2">
-                        {feedback?.finalAssessment || "No feedback yet. Take test to improve the score"}
+                        {feedback?.overallFeedback || "No feedback yet. Take test to improve the score"}
                     </p>
                 </div>
 
                 <div className="flex flex-row gap-2 justify-between">
-                    <DisplayTechIcons techStack={techstack}/>
-                    
+                    <DisplayTechIcons techStack={techstack} />
+
                     <Button className="btn-primary">
-                        <Link href={feedback? `/interview/${interviewId}/feedback`:`/interview/${id}`}>
-                            {feedback? "View Feedback":"Take Test"}
+                        <Link href={feedback ? `/interview/${id}/feedback` : `/interview/${id}`}>
+                            {feedback ? "View Feedback" : "Take Test"}
                         </Link>
                     </Button>
                 </div>

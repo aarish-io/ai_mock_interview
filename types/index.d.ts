@@ -1,16 +1,15 @@
 interface Feedback {
-  id: string;
-  interviewId: string;
-  totalScore: number;
-  categoryScores: Array<{
-    name: string;
+  overallScore: number;
+  overallFeedback: string;
+  answers: {
+    question: string;
     score: number;
-    comment: string;
-  }>;
-  strengths: string[];
-  areasForImprovement: string[];
-  finalAssessment: string;
-  createdAt: string;
+    feedback: string;
+    userAnswer: string;
+    strengths: string[];
+    improvements: string[];
+  }[];
+  createdAt?: string;
 }
 
 interface Interview {
@@ -23,6 +22,7 @@ interface Interview {
   userId: string;
   type: string;
   finalized: boolean;
+  feedback?: Feedback;
 }
 
 interface CreateFeedbackParams {
@@ -45,6 +45,7 @@ interface InterviewCardProps {
   type: string;
   techstack: string[];
   createdAt?: string;
+  feedback?: Feedback;
 }
 
 interface Message {

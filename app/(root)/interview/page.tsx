@@ -1,5 +1,5 @@
 import AgentRetell from "@/components/AgentRetell";
-import {getCurrentUser} from "@/lib/action/auth.action";
+import { getCurrentUser } from "@/lib/actions/auth.action";
 
 const Page = async () => {
 
@@ -7,7 +7,7 @@ const Page = async () => {
     return (
         <>
             <h3>Interview Generation</h3>
-            <AgentRetell userName={user?.name || "User"} userId={user?.id || ""} type="generate"/>
+            <AgentRetell userName={user?.name || "User"} userId={user?.id || ""} type="generate" />
         </>
     )
 }

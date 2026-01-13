@@ -25,10 +25,10 @@
     &quot;accountId&quot;: &quot;c2f22291-b948-42d3-8d92-f57e13245a97&quot;
   }
 }</component>
-  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
-  <component name="KubernetesApiProvider"><![CDATA[{
-  "isMigrated": true
-}]]></component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 3
@@ -44,6 +44,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.zencoder-patch-add-chat-message-raw-content": "true",
     "RunOnceActivity.zencoder-patch-generate-chat-message-id": "true",
@@ -104,7 +105,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-WS-251.25410.117" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-WS-253.29346.242" />
       </set>
     </attachedChunks>
   </component>
@@ -126,6 +127,7 @@
       <workItem from="1748270457592" duration="592000" />
       <workItem from="1748281799290" duration="15000" />
       <workItem from="1748529203755" duration="1553000" />
+      <workItem from="1768230916413" duration="855000" />
     </task>
     <servers />
   </component>
@@ -706,6 +708,10 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="ai.zencoder.plugin.rag.RepoInfoWarningState">
+    <option name="currentWarningState" value="true" />
+    <option name="lastCheckTime" value="1768230923215" />
   </component>
   <component name="ai.zencoder.plugin.rag.settings">
     <option name="desiredChunkSizeBytes" value="4194304" />
