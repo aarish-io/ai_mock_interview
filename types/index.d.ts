@@ -23,6 +23,7 @@ interface Interview {
   type: string;
   finalized: boolean;
   feedback?: Feedback;
+  callId?: string;
 }
 
 interface CreateFeedbackParams {

@@ -21,6 +21,7 @@ interface SavedMessages {
 const AgentRetell = ({ userName, userId, type, interviewId, questions }: AgentProps) => {
     const router = useRouter();
     const [isSpeaking, setIsSpeaking] = useState(false);
+    const [isUserSpeaking, setIsUserSpeaking] = useState(false);
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
     const [messages, setMessages] = useState<SavedMessages[]>([]);
     const [callEnded, setCallEnded] = useState(false);
@@ -71,6 +72,14 @@ const AgentRetell = ({ userName, userId, type, interviewId, questions }: AgentPr
                     content: update.transcript.content
                 } as SavedMessages;
                 setMessages(prev => [...prev, newMessage]);
+
+                if (update.transcript.role === 'user') {
+                    setIsUserSpeaking(true);
+                    // Reset user speaking state after 2 seconds of silence
+                    setTimeout(() => {
+                        setIsUserSpeaking(false);
+                    }, 2000);
+                }
             }
         };
 
@@ -177,7 +186,10 @@ const AgentRetell = ({ userName, userId, type, interviewId, questions }: AgentPr
 
                 <div className="card-border">
                     <div className="card-content">
-                        <Image src="/user-avatar.png" alt="user" height={540} width={540} className="object-cover rounded-full size-[120px]" />
+                        <div className="avatar">
+                            <Image src="/user-avatar.png" alt="user" height={540} width={540} className="object-cover rounded-full size-[120px]" />
+                            {isUserSpeaking && <span className="animate-speak" />}
+                        </div>
                         <h3>{userName}</h3>
                     </div>
                 </div>
@@ -194,16 +206,6 @@ const AgentRetell = ({ userName, userId, type, interviewId, questions }: AgentPr
             {callEnded && (
                 <div className="text-center p-4 bg-dark-200 rounded-lg mb-4">
                     <p className="text-light-100">Call ended. Redirecting to home...</p>
-                </div>
-            )}
-
-            {messages.length > 0 && !callEnded && (
-                <div className="transcript-border">
-                    <div className="transcript">
-                        <p key={latestMessage} className={cn('transition-opacity duration-500 opacity-0', 'animate-fade-in opacity-100')}>
-                            {latestMessage}
-                        </p>
-                    </div>
                 </div>
             )}
 

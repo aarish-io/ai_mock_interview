@@ -46,7 +46,8 @@ export async function generateInterviewFeedback(params: FeedbackParams): Promise
         Questions: ${questions.join("\n")}
         Interview Transcript: ${transcript}
         
-        Provide feedback on the candidate's performance for each question. Include a score out of 10 and a feedback for each question. Also provide a strength and an improvement for each question.`,
+        Provide feedback on the candidate's performance for each question. Include a score out of 100 and a feedback for each question. Also provide a strength and an improvement for each question. 
+        IMPORTANT: The "overallScore" must be a calculated average of all individual answer scores, also out of 100.`,
     });
 
     return object;

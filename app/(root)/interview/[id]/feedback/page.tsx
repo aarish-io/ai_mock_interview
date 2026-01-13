@@ -124,7 +124,10 @@ export default async function FeedbackPage({ params }: PageProps) {
                         </div>
                     ))}
                 </div>
-                <div className="flex justify-center pt-8 pb-10">
+                <div className="flex justify-center pt-8 pb-10 gap-4">
+                    <Link href={`/interview/${interviewId}`}>
+                        <Button size="lg" className="px-8 btn-secondary">Retake Interview</Button>
+                    </Link>
                     <Link href="/dashboard">
                         <Button size="lg" className="px-8">Start New Interview</Button>
                     </Link>

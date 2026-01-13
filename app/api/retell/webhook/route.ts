@@ -23,6 +23,19 @@ export async function POST(request: Request) {
 
             // Check if we have userId in metadata AND if this is a generator call
             if (metadata?.userId && metadata?.type === "generate") {
+                // Idempotency check: Ensure we haven't already processed this call
+                const callId = body.call?.call_id;
+                if (callId) {
+                    const existingInterviewQuery = await db.collection("interviews")
+                        .where("callId", "==", callId)
+                        .get();
+
+                    if (!existingInterviewQuery.empty) {
+                        console.log(`Skipping duplicate interview creation for callId: ${callId}`);
+                        return Response.json({ success: true, message: "Duplicate processed" });
+                    }
+                }
+
                 // Use analysis data if available, otherwise use defaults
                 const role = analysis?.role || "Software Engineer";
                 const level = analysis?.level || "junior";
@@ -56,6 +69,7 @@ export async function POST(request: Request) {
                     coverImage: getRandomInterviewCover(),
                     createdAt: new Date().toISOString(),
                     finalized: true,
+                    callId: callId || null, // Store callId for future idempotency checks
                 });
 
                 console.log("Interview created successfully:", docRef.id);
