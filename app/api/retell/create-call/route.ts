@@ -6,6 +6,8 @@ const RETELL_INTERVIEW_AGENT_ID = process.env.NEXT_PUBLIC_RETELL_INTERVIEW_AGENT
 
 import { db } from "@/firebase/admin";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();

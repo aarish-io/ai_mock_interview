@@ -7,6 +7,8 @@ import DisplayTechIcons from "@/components/DisplayTechIcons";
 import AgentRetell from "@/components/AgentRetell";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 
+export const dynamic = 'force-dynamic';
+
 const Page = async ({ params }: RouteParams) => {
     const { id } = await params;
     const interview = await getInterviewsById(id);

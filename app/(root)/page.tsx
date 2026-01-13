@@ -6,6 +6,8 @@ import InterviewCard from "@/components/InterviewCard";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import { getInterviewsByUserId, getLatestInterviews } from "@/lib/actions/general.action";
 
+export const dynamic = 'force-dynamic';
+
 const Page = async () => {
     const user = await getCurrentUser();
     const [userInterviews, LatestInterviews] = await Promise.all([

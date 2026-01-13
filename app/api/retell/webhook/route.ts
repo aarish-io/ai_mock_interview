@@ -3,6 +3,8 @@ import { db } from "@/firebase/admin";
 import { getRandomInterviewCover } from "@/lib/utils";
 import { generateInterviewFeedback } from "@/lib/actions/feedback.action";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();
@@ -66,26 +68,26 @@ export async function POST(request: Request) {
                 const interviewDoc = await interviewRef.get();
                 const interviewData = interviewDoc.data();
 
-                if(!interviewData){
+                if (!interviewData) {
                     console.log("Interview not found:", interviewId);
                     return Response.json({ success: false, error: "Interview not found" });
                 }
 
-                console.log("generating feedback for interview id:",interviewId);
+                console.log("generating feedback for interview id:", interviewId);
 
                 const feedback = await generateInterviewFeedback({
-                    questions:interviewData.questions,
-                    role:interviewData.role,
-                    level:interviewData.level,
-                    transcript:body.call?.transcript,
+                    questions: interviewData.questions,
+                    role: interviewData.role,
+                    level: interviewData.level,
+                    transcript: body.call?.transcript,
                 })
-                console.log("Generated feedback:",feedback);
+                console.log("Generated feedback:", feedback);
 
                 await interviewRef.update({
                     feedback,
                     transcript,
-                    status:"completed",
-                    completedAt:new Date().toISOString(),
+                    status: "completed",
+                    completedAt: new Date().toISOString(),
                 })
 
                 console.log("Interview updated successfully:", interviewId);

@@ -1,7 +1,9 @@
-import { db} from "@/firebase/admin";
+import { db } from "@/firebase/admin";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertCircle, Home, RefreshCcw } from "lucide-react";
+
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
     params: {
@@ -9,13 +11,13 @@ interface PageProps {
     };
 }
 
-export default async function FeedbackPage({params}:PageProps){
+export default async function FeedbackPage({ params }: PageProps) {
     const interviewId = params.id;
     const interviewDoc = await db.collection("interviews").doc(interviewId).get();
     const interviewData = interviewDoc.data();
 
-    if(!interviewDoc || !interviewData.feedback){
-        return(
+    if (!interviewDoc || !interviewData.feedback) {
+        return (
             <div className="min-h-screen flex flex-col items-center justify-center p-10 text-center">
                 <RefreshCcw className="w-12 h-12 text-primary animate-spin mb-4" />
                 <h2 className="text-2xl font-bold">Analysis in Progress...</h2>
@@ -27,7 +29,7 @@ export default async function FeedbackPage({params}:PageProps){
             </div>
         );
     }
-    
+
     const { feedback, role, level } = interviewData;
     // 2. Extract Data
     const overallScore = feedback.overallScore;
@@ -74,8 +76,8 @@ export default async function FeedbackPage({params}:PageProps){
                                     {answer.question}
                                 </h4>
                                 <span className={`shrink-0 px-3 py-1 rounded-full text-sm font-bold border ${answer.score >= 80 ? 'bg-green-50 text-green-700 border-green-200' :
-                                        answer.score >= 50 ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                            'bg-red-50 text-red-700 border-red-200'
+                                    answer.score >= 50 ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                                        'bg-red-50 text-red-700 border-red-200'
                                     }`}>
                                     {answer.score}/100
                                 </span>

@@ -1,6 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Mock Interview Platform
 
-## Getting Started
+![Docker](https://img.shields.io/docker/v/aarish312/mock-interview-platform?label=Docker%20Hub&color=2496ED)
+![Build](https://github.com/aarish-io/ai_mock_interview/workflows/Build%20and%20Push%20Docker%20Image/badge.svg)
+![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+A comprehensive Mock Interview Platform powered by AI to help users practice and improve their interview skills.
+
+## 🐳 Docker Setup
+
+### Quick Start
+
+The easiest way to run this project is using Docker Compose:
+
+```bash
+# Clone the repo
+git clone https://github.com/aarish-io/ai_mock_interview.git
+cd ai_mock_interview
+
+# Copy environment file and add your keys
+cp .env.example .env.local
+
+# Run with Docker Compose
+docker compose up
+```
+
+Visit [http://localhost:3000](http://localhost:3000)
+
+### Build Locally
+
+```bash
+# Build the Docker image
+docker build -t mock-interview-platform .
+
+# Run the container
+docker run -p 3000:3000 --env-file .env.local mock-interview-platform
+```
+
+### Using Pre-built Image
+
+```bash
+# Pull from Docker Hub
+docker pull aarish312/mock-interview-platform:latest
+
+# Run it
+docker run -p 3000:3000 --env-file .env.local aarish312/mock-interview-platform:latest
+```
+
+## 🚀 Getting Started (Development)
 
 First, run the development server:
 
@@ -16,21 +64,33 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔑 Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Firebase API Key | Yes |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase Auth Domain | Yes |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase Project ID | Yes |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Firebase Storage Bucket | Yes |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase Messaging Sender ID | Yes |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase App ID | Yes |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Google Gemini AI Key | Yes |
+| `RETELL_API_KEY` | Retell AI Key | Yes |
 
-## Learn More
+## 📚 Documentation
 
-To learn more about Next.js, take a look at the following resources:
+For more detailed information about the system architecture, please read [ARCHITECTURE.md](ARCHITECTURE.md).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Frontend**: Next.js 15, React 19, TailwindCSS, Shadcn UI
+- **Backend**: Next.js Server Actions, API Routes
+- **Database**: Firebase Firestore
+- **Auth**: Firebase Authentication
+- **AI**: Google Gemini Pro (Generation), Retell AI (Voice)
+- **Container**: Docker
+- **CI/CD**: GitHub Actions
 
-## Deploy on Vercel
+## 📄 License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
