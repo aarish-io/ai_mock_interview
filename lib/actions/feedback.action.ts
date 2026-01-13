@@ -1,4 +1,4 @@
-import { generateText } from "ai";
+import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
 
@@ -11,7 +11,7 @@ interface FeedbackParams {
 interface FeedbackResults {
     overallScore: number;
     overallFeedback: string;
-    answers:{
+    answers: {
         question: string;
         score: number;
         feedback: string;
@@ -21,11 +21,11 @@ interface FeedbackResults {
     }[];
 }
 
-export async function generateInterviewFeedback(params: FeedbackParams): Promise<FeedbackResults>{
+export async function generateInterviewFeedback(params: FeedbackParams): Promise<FeedbackResults> {
 
-    const {role, level, questions, transcript} = params;
+    const { role, level, questions, transcript } = params;
 
-    const {object} = await generateObject({
+    const { object } = await generateObject({
         model: google("models/gemini-2.5-flash"),
         schema: z.object({
             overallScore: z.number(),
