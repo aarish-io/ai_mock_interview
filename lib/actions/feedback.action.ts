@@ -74,21 +74,25 @@ export async function saveUserFeedback({
             return { success: false, error: "Missing required fields" };
         }
 
-        const feedbackRef = db.collection("user_feedbacks").doc();
+        // Use interviewId as the document ID to ensure 1:1 mapping and preventing duplicates
+        const feedbackRef = db.collection("user_feedbacks").doc(interviewId);
+        const existingFeedback = await feedbackRef.get();
 
         // Save individual feedback
         await feedbackRef.set({
-            id: feedbackRef.id,
+            id: interviewId, // Use interviewId as ID
             interviewId,
             userId,
             ...feedbackData,
             createdAt: new Date().toISOString(),
         });
 
-        // Trigger stats update
-        await updateInterviewStats(interviewId, feedbackData.overallScore);
+        // Only update stats if this is a NEW feedback submission
+        if (!existingFeedback.exists) {
+            await updateInterviewStats(interviewId, feedbackData.overallScore);
+        }
 
-        return { success: true, feedbackId: feedbackRef.id };
+        return { success: true, feedbackId: interviewId };
     } catch (error) {
         console.error("Error saving user feedback:", error);
         return { success: false, error: "Failed to save feedback" };
