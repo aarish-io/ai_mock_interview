@@ -128,10 +128,23 @@ export async function POST(request: Request) {
             }
         }
 
-        return Response.json({ success: true });
+        return Response.json({ success: true }, {
+            headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
     } catch (error) {
         console.error("Webhook error:", error);
         console.error("Error details:", error instanceof Error ? error.message : String(error));
-        return Response.json({ success: false }, { status: 500 });
+        return Response.json({ success: false }, {
+            status: 500,
+            headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
     }
 }
