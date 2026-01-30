@@ -5,6 +5,7 @@ import { generateInterviewFeedback } from "@/lib/actions/feedback.action";
 import { saveUserFeedback } from "@/lib/actions/feedback.action";
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Increase timeout to 60s for LLM processing
 
 export async function POST(request: Request) {
     try {
@@ -101,13 +102,24 @@ export async function POST(request: Request) {
 
                 console.log("generating feedback for interview id:", interviewId);
 
-                const feedback = await generateInterviewFeedback({
-                    questions: interviewData.questions,
-                    role: interviewData.role,
-                    level: interviewData.level,
-                    transcript: body.call?.transcript,
-                })
-                console.log("Generated feedback:", feedback);
+                let feedback;
+                try {
+                    feedback = await generateInterviewFeedback({
+                        questions: interviewData.questions,
+                        role: interviewData.role,
+                        level: interviewData.level,
+                        transcript: body.call?.transcript,
+                    });
+                    console.log("Generated feedback:", feedback ? "Success" : "Empty");
+                } catch (err) {
+                    console.error("Error generating feedback:", err);
+                    return Response.json({ success: false, error: "Feedback generation failed" });
+                }
+
+                if (!feedback) {
+                    console.error("Feedback generation returned null/undefined");
+                    return Response.json({ success: false, error: "Feedback generation failed" });
+                }
 
                 const result = await saveUserFeedback({
                     interviewId,
