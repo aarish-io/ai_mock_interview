@@ -2,6 +2,7 @@ import { generateInterviewQuestions } from "@/lib/actions/interview.action";
 import { db } from "@/firebase/admin";
 import { getRandomInterviewCover } from "@/lib/utils";
 import { generateInterviewFeedback } from "@/lib/actions/feedback.action";
+import { saveUserFeedback } from "@/lib/actions/feedback.action";
 
 export const dynamic = 'force-dynamic';
 
@@ -97,8 +98,17 @@ export async function POST(request: Request) {
                 })
                 console.log("Generated feedback:", feedback);
 
+                const result = await saveUserFeedback({
+                    interviewId,
+                    userId: interviewData.userId,
+                    feedbackData: feedback
+                });
+
+                if (!result.success) {
+                    console.error("Failed to save feedback:", result.error);
+                }
+
                 await interviewRef.update({
-                    feedback,
                     transcript,
                     status: "completed",
                     completedAt: new Date().toISOString(),

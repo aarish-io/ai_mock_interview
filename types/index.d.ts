@@ -1,3 +1,42 @@
+interface UserFeedback{
+  id: string;
+  interviewId: string;
+  userId: string;
+   overallScore: number;
+  overallFeedback: string;
+  answers:{
+    question: string;
+    score: number;
+    feedback: string;
+    userAnswer: string;
+    strengths: string[];
+    improvements: string[];
+  }[];
+  createdAt: string;
+}
+
+interface InterviewStats{
+  interveiwId: string;
+  totalAttempts: number;
+  averageScore: number;
+  highestScore: number;
+  lowestScore: number;
+  scoreDistribution: {
+    range0_50: number;
+    range51_75: number;
+    range76_100: number;
+  };
+  lastUpdated: string;
+}
+
+interface ScoreComparison{
+  userScore: number;
+  averageScore: number;
+  percentile: number;
+  totalAttempts: number;
+}
+
+
 interface Feedback {
   overallScore: number;
   overallFeedback: string;

@@ -1,44 +1,61 @@
 import { db } from "@/firebase/admin";
+import { getUserFeedback, getScoreComparison } from "@/lib/actions/feedback.action";
+import { getCurrentUser } from "@/lib/actions/auth.action";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, AlertCircle, Home, RefreshCcw } from "lucide-react";
-
+import { CheckCircle2, AlertCircle, Home, RefreshCcw, TrendingUp, Users } from "lucide-react";
 export const dynamic = 'force-dynamic';
-
 interface PageProps {
     params: {
         id: string;
     };
 }
-
 export default async function FeedbackPage({ params }: PageProps) {
-    const interviewId = params.id;
+    // Fix Next.js 15 warning: await params before accessing properties
+    const { id: interviewId } = await params;
+
+    // Get current user (fixes authentication issue)
+    const user = await getCurrentUser();
+
+    if (!user) {
+        return <div>Please log in to view feedback</div>;
+    }
+
+    const userId = user.id;
+    // Get interview data
     const interviewDoc = await db.collection("interviews").doc(interviewId).get();
     const interviewData = interviewDoc.data();
 
-    if (!interviewDoc || !interviewData.feedback) {
+    if (!interviewDoc.exists) {
+        return <div>Interview not found</div>;
+    }
+    // Get user's feedback from new collection
+    const feedback = await getUserFeedback(interviewId, userId);
+
+    if (!feedback) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-10 text-center">
                 <RefreshCcw className="w-12 h-12 text-primary animate-spin mb-4" />
                 <h2 className="text-2xl font-bold">Analysis in Progress...</h2>
                 <p className="text-gray-500 mt-2">Our AI is currently analyzing your interview transcript.</p>
                 <p className="text-gray-500">Please refresh this page in a few moments.</p>
-                <Button onClick={() => window.location.reload()} className="mt-6" variant="outline">
-                    Refresh Page
-                </Button>
+                <Link href={`/interview/${interviewId}/feedback`} className="mt-6">
+                    <Button variant="outline">
+                        Refresh Page
+                    </Button>
+                </Link>
             </div>
         );
     }
+    // Get score comparison
+    const comparison = await getScoreComparison(interviewId, userId);
 
-    const { feedback, role, level } = interviewData;
-    // 2. Extract Data
-    const overallScore = feedback.overallScore;
-    const overallFeedback = feedback.overallFeedback;
-    // 3. UI Layout
+    const { role, level } = interviewData;
+    const { overallScore, overallFeedback, answers } = feedback;
     return (
         <div className="min-h-screen bg-gray-50/50 p-6 md:p-10">
             <div className="max-w-4xl mx-auto space-y-8">
-                {/* Header Section */}
+                {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h1 className="text-3xl font-extrabold tracking-tight">Interview Feedback</h1>
@@ -50,24 +67,66 @@ export default async function FeedbackPage({ params }: PageProps) {
                         </Button>
                     </Link>
                 </div>
+                {/* Score Comparison Card - NEW! */}
+                {comparison && (
+                    <div className="grid md:grid-cols-3 gap-4">
+                        {/* Your Score */}
+                        <div className="bg-white border rounded-xl p-6 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <TrendingUp className="w-5 h-5 text-blue-600" />
+                                <h3 className="text-sm font-medium text-gray-500 uppercase">Your Score</h3>
+                            </div>
+                            <div className={`text-4xl font-black ${overallScore >= 80 ? 'text-green-600' :
+                                overallScore >= 50 ? 'text-yellow-600' :
+                                    'text-red-600'
+                                }`}>
+                                {overallScore}
+                                <span className="text-lg text-gray-400 font-normal">/100</span>
+                            </div>
+                        </div>
+                        {/* Average Score */}
+                        <div className="bg-white border rounded-xl p-6 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Users className="w-5 h-5 text-purple-600" />
+                                <h3 className="text-sm font-medium text-gray-500 uppercase">Average Score</h3>
+                            </div>
+                            <div className="text-4xl font-black text-purple-600">
+                                {Math.round(comparison.averageScore)}
+                                <span className="text-lg text-gray-400 font-normal">/100</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">From {comparison.totalAttempts} attempts</p>
+                        </div>
+                        {/* Percentile */}
+                        <div className="bg-white border rounded-xl p-6 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                                <h3 className="text-sm font-medium text-gray-500 uppercase">Percentile</h3>
+                            </div>
+                            <div className="text-4xl font-black text-emerald-600">
+                                {comparison.percentile}
+                                <span className="text-lg text-gray-400 font-normal">th</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Better than {comparison.percentile}% of users
+                            </p>
+                        </div>
+                    </div>
+                )}
                 {/* Overall Score Card */}
                 <div className="bg-white border rounded-xl p-8 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
-                    <div className={`absolute top-0 left-0 w-full h-1 ${overallScore >= 80 ? 'bg-green-500' : overallScore >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                    <div className={`absolute top-0 left-0 w-full h-1 ${overallScore >= 80 ? 'bg-green-500' :
+                        overallScore >= 50 ? 'bg-yellow-500' :
+                            'bg-red-500'
                         }`} />
                     <h2 className="text-gray-500 font-medium uppercase tracking-wider text-sm">Overall Performance</h2>
-                    <div className={`mt-4 text-7xl font-black ${overallScore >= 80 ? 'text-green-600' : overallScore >= 50 ? 'text-yellow-600' : 'text-red-600'
-                        }`}>
-                        {overallScore}
-                        <span className="text-2xl text-gray-400 font-normal">/100</span>
-                    </div>
                     <p className="mt-6 text-gray-700 max-w-2xl leading-relaxed text-lg">
                         {overallFeedback}
                     </p>
                 </div>
-                {/* Feedback List */}
+                {/* Detailed Analysis */}
                 <h3 className="text-xl font-bold mt-10">Detailed Analysis</h3>
                 <div className="space-y-6">
-                    {feedback.answers.map((answer: any, index: number) => (
+                    {answers.map((answer: any, index: number) => (
                         <div key={index} className="bg-white border rounded-xl p-6 shadow-sm transition-all hover:shadow-md">
                             {/* Question Header */}
                             <div className="flex justify-between items-start gap-4 mb-4">
@@ -92,7 +151,7 @@ export default async function FeedbackPage({ params }: PageProps) {
                                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Feedback</span>
                                 <p className="text-gray-700 leading-relaxed">{answer.feedback}</p>
                             </div>
-                            {/* Strengths & Improvements Grid */}
+                            {/* Strengths & Improvements */}
                             <div className="grid md:grid-cols-2 gap-4 pt-4 border-t">
                                 <div className="bg-green-50/50 p-4 rounded-lg border border-green-100">
                                     <h5 className="flex items-center gap-2 font-bold text-green-700 mb-2 text-sm uppercase">
@@ -124,6 +183,7 @@ export default async function FeedbackPage({ params }: PageProps) {
                         </div>
                     ))}
                 </div>
+                {/* Action Buttons */}
                 <div className="flex justify-center pt-8 pb-10 gap-4">
                     <Link href={`/interview/${interviewId}`}>
                         <Button size="lg" className="px-8 btn-secondary">Retake Interview</Button>
