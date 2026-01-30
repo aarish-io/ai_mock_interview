@@ -1,53 +1,82 @@
-import {db} from "@/firebase/admin";
+import { db } from "@/firebase/admin";
 
-export async function getInterviewsByUserId(userId:string):Promise<Interview[] | null>{
-    // Return empty array if userId is undefined/null
+export async function getInterviewsByUserId(userId: string): Promise<Interview[] | null> {
     if (!userId) return [];
 
     const interviews = await db.collection('interviews')
-        .where('userId','==',userId)
-        .orderBy('createdAt','desc')
+        .where('userId', '==', userId)
+        .orderBy('createdAt', 'desc')
         .get();
 
-    return interviews.docs.map((doc)=>({
-        id : doc.id,
-        ...doc.data(),
-    })) as Interview[];
+    const interviewsWithFeedback = await Promise.all(interviews.docs.map(async (doc) => {
+        const interviewData = doc.data();
+        // Construct composite ID using the CURRENT USER (function parameter), not the interview creator
+        const feedbackId = `${doc.id}_${userId}`;
 
+        let feedbackDoc = await db.collection('user_feedbacks').doc(feedbackId).get();
+        // console.log(`[DEBUG] Checking feedback for ${feedbackId}: ${feedbackDoc.exists}`);
+
+        // Fallback: Query by fields if direct ID lookup fails (handles legacy data or mismatches)
+        if (!feedbackDoc.exists) {
+            const feedbackQuery = await db.collection('user_feedbacks')
+                .where('interviewId', '==', doc.id)
+                .where('userId', '==', userId)
+                .limit(1)
+                .get();
+
+            if (!feedbackQuery.empty) {
+                feedbackDoc = feedbackQuery.docs[0];
+            }
+        }
+
+        return {
+            id: doc.id,
+            ...interviewData,
+            feedback: feedbackDoc.exists ? feedbackDoc.data() : undefined
+        } as Interview;
+    }));
+
+    return interviewsWithFeedback;
 }
 
-export async function getLatestInterviews(params:GetLatestInterviewsParams):Promise<Interview[] | null>{
-    const {userId,limit=20} = params;
+export async function getLatestInterviews(params: GetLatestInterviewsParams): Promise<Interview[] | null> {
+    const { userId, limit = 20 } = params;
 
-    // If no userId, get all finalized interviews
-    if (!userId) {
-        const interviews = await db.collection('interviews')
-            .orderBy('createdAt','desc')
-            .where('finalized','==',true)
-            .limit(limit)
-            .get();
+    let query = db.collection('interviews')
+        .orderBy('createdAt', 'desc')
+        .where('finalized', '==', true);
 
-        return interviews.docs.map((doc)=>({
-            id : doc.id,
-            ...doc.data(),
-        })) as Interview[];
+    if (userId) {
+        query = query.where('userId', '!=', userId);
     }
 
-    const interviews = await db.collection('interviews')
-        .orderBy('createdAt','desc')
-        .where('finalized','==',true)
-        .where('userId','!=',userId)
-        .limit(limit)
-        .get();
+    const interviews = await query.limit(limit).get();
 
-    return interviews.docs.map((doc)=>({
-        id : doc.id,
-        ...doc.data(),
-    })) as Interview[];
+    // Check if current user has taken each interview
+    const interviewsWithFeedback = await Promise.all(interviews.docs.map(async (doc) => {
+        let userFeedback = null;
 
+        if (userId) {
+            const feedbackId = `${doc.id}_${userId}`;
+            const feedbackDoc = await db.collection('user_feedbacks').doc(feedbackId).get();
+
+            if (feedbackDoc.exists) {
+                userFeedback = feedbackDoc.data();
+            }
+        }
+
+        return {
+            id: doc.id,
+            ...doc.data(),
+            averageScore: doc.data().stats?.averageScore || null,
+            feedback: userFeedback // Add user's feedback if they've taken it
+        } as any;
+    }));
+
+    return interviewsWithFeedback;
 }
 
-export async function getInterviewsById(id:string):Promise<Interview | null>{
+export async function getInterviewsById(id: string): Promise<Interview | null> {
     const interview = await db.collection('interviews')
         .doc(id)
         .get();

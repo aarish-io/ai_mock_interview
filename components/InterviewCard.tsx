@@ -5,8 +5,9 @@ import { getRandomInterviewCover } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import DisplayTechIcons from "@/components/DisplayTechIcons";
+import { InterviewCardProps } from "@/types";
 
-const InterviewCard = ({ id, userId, role, type, techstack, createdAt, feedback }: InterviewCardProps) => {
+const InterviewCard = ({ id, userId, role, type, techstack, createdAt, feedback, ...props }: InterviewCardProps & { averageScore?: number }) => {
 
     const normalisedType = /mix/gi.test(type) ? "Mixed" : type;
     const formattedDate = dayjs(feedback?.createdAt || createdAt || Date.now()).format('MMM D, YYYY');
@@ -32,12 +33,15 @@ const InterviewCard = ({ id, userId, role, type, techstack, createdAt, feedback 
 
                         <div className="flex flex-row gap-2">
                             <Image src="/star.svg" alt="star" width={22} height={22} />
-                            <p>{feedback?.overallScore || "---"}/100</p>
+                            <p className="text-sm font-medium">
+                                {feedback?.overallScore ? `${feedback.overallScore}/100` :
+                                    (props as any).averageScore ? `Avg: ${(props as any).averageScore}/100` : "---/100"}
+                            </p>
                         </div>
                     </div>
 
                     <p className="line-clamp-2">
-                        {feedback?.overallFeedback || "No feedback yet. Take test to improve the score"}
+                        {feedback?.overallFeedback || "No user feedback yet."}
                     </p>
                 </div>
 
