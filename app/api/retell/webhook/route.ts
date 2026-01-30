@@ -24,25 +24,26 @@ export async function POST(request: Request) {
 
             // Check if we have userId in metadata AND if this is a generator call
             if (metadata?.userId && metadata?.type === "generate") {
-                // Idempotency check: Ensure we haven't already processed this call
                 const callId = body.call?.call_id;
-                if (callId) {
-                    const existingInterviewQuery = await db.collection("interviews")
-                        .where("callId", "==", callId)
-                        .get();
 
-                    if (!existingInterviewQuery.empty) {
-                        console.log(`Skipping duplicate interview creation for callId: ${callId}`);
-                        return Response.json({ success: true, message: "Duplicate processed" });
-                    }
+                // Strict validation: Ensure analysis data is complete (User request)
+                // If the user hanged up early or analysis failed, we shouldn't generate a partial interview
+                if (!analysis?.role || !analysis?.level || !analysis?.type || !analysis?.techstack) {
+                    console.log("Analysis incomplete/missing, stopping interview generation.", analysis);
+                    return Response.json({ success: false, error: "Incomplete analysis data" });
                 }
 
-                // Use analysis data if available, otherwise use defaults
-                const role = analysis?.role || "Software Engineer";
-                const level = analysis?.level || "junior";
-                const type = analysis?.type || "technical";
-                const techstackRaw = analysis?.techstack || "JavaScript";
-                const amount = parseInt(analysis?.amount) || 5;
+                if (!callId) {
+                    console.error("Missing callId in webhook body");
+                    return Response.json({ success: false, error: "Missing callId" });
+                }
+
+                // Extract fields without defaults (Strict mode)
+                const role = analysis.role;
+                const level = analysis.level;
+                const type = analysis.type;
+                const techstackRaw = analysis.techstack;
+                const amount = parseInt(analysis?.amount) || 5; // Default amount is fine
 
                 const techstackArray = typeof techstackRaw === 'string'
                     ? techstackRaw.split(",").map((s: string) => s.trim())
@@ -50,30 +51,40 @@ export async function POST(request: Request) {
 
                 console.log("Creating interview with:", { role, level, type, techstackArray, amount });
 
-                const questions = await generateInterviewQuestions({
-                    role,
-                    level,
-                    type,
-                    techstack: techstackArray,
-                    amount,
-                });
+                try {
+                    const questions = await generateInterviewQuestions({
+                        role,
+                        level,
+                        type,
+                        techstack: techstackArray,
+                        amount,
+                    });
 
-                console.log("Generated questions:", questions);
+                    console.log("Generated questions:", questions);
 
-                const docRef = await db.collection("interviews").add({
-                    userId: metadata.userId,
-                    role,
-                    level,
-                    type,
-                    techstack: techstackArray,
-                    questions,
-                    coverImage: getRandomInterviewCover(),
-                    createdAt: new Date().toISOString(),
-                    finalized: true,
-                    callId: callId || null, // Store callId for future idempotency checks
-                });
+                    // Use callId as the document ID to prevent duplicates (Idempotency)
+                    await db.collection("interviews").doc(callId).create({
+                        userId: metadata.userId,
+                        role,
+                        level,
+                        type,
+                        techstack: techstackArray,
+                        questions,
+                        coverImage: getRandomInterviewCover(),
+                        createdAt: new Date().toISOString(),
+                        finalized: true,
+                        callId: callId, // Store callId field as well
+                    });
 
-                console.log("Interview created successfully:", docRef.id);
+                    console.log("Interview created successfully:", callId);
+                } catch (error: any) {
+                    // Check if error is "Already Exists" (Code 6 in gRPC/Firebase)
+                    if (error.code === 6 || error.message?.includes("already exists")) {
+                        console.log(`Skipping duplicate interview creation for callId: ${callId}`);
+                        return Response.json({ success: true, message: "Duplicate processed" });
+                    }
+                    throw error; // Re-throw other errors
+                }
             }
 
             else if (metadata?.userId && metadata?.type === "interview") {

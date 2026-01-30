@@ -11,15 +11,18 @@ export async function getInterviewsByUserId(userId: string): Promise<Interview[]
     const interviewsWithFeedback = await Promise.all(interviews.docs.map(async (doc) => {
         const interviewData = doc.data();
         let feedbackDoc = await db.collection('user_feedbacks').doc(doc.id).get();
+        console.log(`[DEBUG] Checking feedback for interview ${doc.id} (Doc ID lookup): ${feedbackDoc.exists}`);
 
         // Backward compatibility: If not found by ID, try querying by interviewId field
         if (!feedbackDoc.exists) {
+            console.log(`[DEBUG] Feedback not found by ID, querying by interviewId field for ${doc.id}`);
             const feedbackQuery = await db.collection('user_feedbacks')
                 .where('interviewId', '==', doc.id)
                 .limit(1)
                 .get();
             if (!feedbackQuery.empty) {
                 feedbackDoc = feedbackQuery.docs[0];
+                console.log(`[DEBUG] Found feedback via backward compatibility query for ${doc.id}`);
             }
         }
 
