@@ -188,11 +188,9 @@ export default async function FeedbackPage({ params }: PageProps) {
                     <Link href={`/interview/${interviewId}`}>
                         <Button size="lg" className="px-8 btn-secondary">Retake Interview</Button>
                     </Link>
-                    <Link href="/dashboard">
-                        <Button size="lg" className="px-8">Start New Interview</Button>
-                    </Link>
+                    {/* Start New Interview button removed as per user request */}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
