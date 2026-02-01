@@ -50,7 +50,7 @@ export default async function FeedbackPage({ params }: PageProps) {
     // Get score comparison
     const comparison = await getScoreComparison(interviewId, userId);
 
-    const { role, level } = interviewData;
+    const { role, level } = interviewData as { role: string, level: string } || { role: 'Unknown', level: 'Unknown' };
     const { overallScore, overallFeedback, answers } = feedback;
     return (
         <div className="min-h-screen bg-gray-50/50 p-6 md:p-10">
