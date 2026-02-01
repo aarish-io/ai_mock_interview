@@ -66,13 +66,7 @@ export async function getLatestInterviews(params: GetLatestInterviewsParams): Pr
         return {
             id: doc.id,
             ...interviewData,
-            feedback: { overallScore: averageScore } // Hack: Passing it as overallScore so InterviewCard displays it if user hasn't taken it. 
-            // Better approach: Update InterviewCard to accept 'averageScore' prop, but this is a quick fix for UI compatibility.
-            // Actually, let's pass a custom 'globalStats' field and update type definition if possible, 
-            // but for now, let's stick to the requested behavior of "showing avg score".
-            // If we assume 'feedback' prop implies USER feedback, we shouldn't fake it. 
-            // But the user said "show avg score ... regardless of interview taken".
-            // Let's attach it as 'averageScore' and update InterviewCard to prefer user feedback, else show average.
+            feedback: { overallScore: averageScore },
             averageScore: averageScore
         } as any;
     }));
