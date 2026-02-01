@@ -84,3 +84,57 @@ export async function getInterviewsById(id: string): Promise<Interview | null> {
     return interview.data() as Interview | null;
 
 }
+
+export async function getCompletedInterviews(userId: string): Promise<Interview[] | null> {
+    if (!userId) return [];
+
+    const feedbackQuery = await db.collection('user_feedbacks')
+        .where('userId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .get();
+
+    const interviews = await Promise.all(feedbackQuery.docs.map(async (feedbackDoc) => {
+        const feedbackData = feedbackDoc.data();
+        const interviewDoc = await db.collection('interviews').doc(feedbackData.interviewId).get();
+
+        if (!interviewDoc.exists) return null;
+
+        return {
+            id: interviewDoc.id,
+            ...interviewDoc.data(),
+            feedback: feedbackData
+        } as Interview;
+    }));
+
+    return interviews.filter((i): i is Interview => i !== null);
+}
+
+export async function getTrendingInterviews(limit: number = 5): Promise<Interview[] | null> {
+    try {
+        const interviews = await db.collection('interviews')
+            .orderBy('stats.totalAttempts', 'desc')
+            .where('finalized', '==', true)
+            .limit(limit)
+            .get();
+
+        return interviews.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            averageScore: doc.data().stats?.averageScore || null
+        })) as unknown as Interview[];
+    } catch (error) {
+        console.warn("Trending fetch failed (likely missing index), falling back to latest", error);
+        // Fallback to latest if stats.totalAttempts index doesn't exist
+        const interviews = await db.collection('interviews')
+            .orderBy('createdAt', 'desc')
+            .where('finalized', '==', true)
+            .limit(limit)
+            .get();
+        
+        return interviews.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            averageScore: doc.data().stats?.averageScore || null
+        })) as unknown as Interview[];
+    }
+}
