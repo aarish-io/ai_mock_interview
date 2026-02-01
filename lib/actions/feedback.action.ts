@@ -74,13 +74,15 @@ export async function saveUserFeedback({
             return { success: false, error: "Missing required fields" };
         }
 
-        // Use interviewId as the document ID to ensure 1:1 mapping and preventing duplicates
-        const feedbackRef = db.collection("user_feedbacks").doc(interviewId);
+        // Use composite ID to allow multiple users to take the same interview
+        // (e.g. public interviews or shared links)
+        const feedbackId = `${interviewId}_${userId}`;
+        const feedbackRef = db.collection("user_feedbacks").doc(feedbackId);
         const existingFeedback = await feedbackRef.get();
 
         // Save individual feedback
         await feedbackRef.set({
-            id: interviewId, // Use interviewId as ID
+            id: feedbackId,
             interviewId,
             userId,
             ...feedbackData,
@@ -92,15 +94,18 @@ export async function saveUserFeedback({
             await updateInterviewStats(interviewId, feedbackData.overallScore);
         }
 
-        return { success: true, feedbackId: interviewId };
+        return { success: true, feedbackId: feedbackId };
     } catch (error) {
         console.error("Error saving user feedback:", error);
         return { success: false, error: "Failed to save feedback" };
     }
 }
 
-// Update aggregated stats for the interview using a transaction
-export async function updateInterviewStats(interviewId: string, newScore: number) {
+// Update aggregated stats for the specific interview session
+export async function updateInterviewStats(
+    interviewId: string,
+    newScore: number
+) {
     try {
         const statsRef = db.collection("interview_stats").doc(interviewId);
 
@@ -110,7 +115,7 @@ export async function updateInterviewStats(interviewId: string, newScore: number
             if (!doc.exists) {
                 // Initialize stats if first time
                 transaction.set(statsRef, {
-                    interviewId,
+                    id: interviewId,
                     totalAttempts: 1,
                     averageScore: newScore,
                     highestScore: newScore,
@@ -127,7 +132,7 @@ export async function updateInterviewStats(interviewId: string, newScore: number
                 const newTotal = (data.totalAttempts || 0) + 1;
                 const currentAvg = data.averageScore || 0;
 
-                // Calculate new running average: (OldAvg * OldCount + NewScore) / NewCount
+                // Calculate new running average
                 const newAverage = ((currentAvg * data.totalAttempts) + newScore) / newTotal;
 
                 transaction.update(statsRef, {
