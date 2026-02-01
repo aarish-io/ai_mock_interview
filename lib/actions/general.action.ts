@@ -66,7 +66,6 @@ export async function getLatestInterviews(params: GetLatestInterviewsParams): Pr
         return {
             id: doc.id,
             ...interviewData,
-            feedback: { overallScore: averageScore },
             averageScore: averageScore
         } as any;
     }));
