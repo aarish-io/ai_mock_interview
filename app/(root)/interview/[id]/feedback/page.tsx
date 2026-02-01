@@ -61,7 +61,7 @@ export default async function FeedbackPage({ params }: PageProps) {
                         <h1 className="text-3xl font-extrabold tracking-tight">Interview Feedback</h1>
                         <p className="text-gray-500 text-lg">{role} • {level}</p>
                     </div>
-                    <Link href="/dashboard">
+                    <Link href="/">
                         <Button variant="outline" className="gap-2">
                             <Home className="w-4 h-4" /> Back to Dashboard
                         </Button>
