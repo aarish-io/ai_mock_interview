@@ -29,11 +29,18 @@ const Page = async () => {
                     <h2>Get Interview Ready With AI Powered Production & Practice</h2>
                     <p className="text-primary-100">Practice on real interview questions and get instant feedback</p>
 
-                    <Button asChild className="btn-primary max-sm:w-full mt-4">
-                        <Link href="/interview">
-                            Start Practicing
-                        </Link>
-                    </Button>
+                    <div className="flex gap-4 items-center max-sm:flex-col w-full mt-4">
+                        <Button asChild className="btn-primary w-full sm:w-fit">
+                            <Link href="/interview">
+                                Start Practicing
+                            </Link>
+                        </Button>
+                        <Button asChild variant="outline" className="w-full sm:w-fit border-primary-200 text-primary-200 hover:bg-primary-200 hover:text-dark-100 font-bold rounded-full min-h-10 px-6">
+                            <Link href="/resume">
+                                Analyze Resume
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 <Image src="/robot.png" alt="robot-dude" className="max-sm:hidden" width={400} height={400} />
