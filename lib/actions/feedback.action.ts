@@ -2,7 +2,6 @@ import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { db } from "@/firebase/admin";
-import { FieldValue } from "firebase-admin/firestore";
 
 
 interface FeedbackParams {

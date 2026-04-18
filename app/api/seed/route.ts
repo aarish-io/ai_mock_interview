@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from "@/firebase/admin";
 import { getCurrentUser } from "@/lib/actions/auth.action";
-import { randomUUID } from "crypto";
 
 export async function GET() {
     try {

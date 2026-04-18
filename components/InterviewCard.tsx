@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import DisplayTechIcons from "@/components/DisplayTechIcons";
 import { InterviewCardProps } from "@/types";
 
-const InterviewCard = ({ id, userId, role, type, techstack, createdAt, feedback, ...props }: InterviewCardProps & { averageScore?: number }) => {
+const InterviewCard = ({ id, role, type, techstack, createdAt, feedback, averageScore }: InterviewCardProps & { averageScore?: number }) => {
 
     const normalisedType = /mix/gi.test(type) ? "Mixed" : type;
     const formattedDate = dayjs(feedback?.createdAt || createdAt || Date.now()).format('MMM D, YYYY');
@@ -35,7 +35,7 @@ const InterviewCard = ({ id, userId, role, type, techstack, createdAt, feedback,
                             <Image src="/star.svg" alt="star" width={22} height={22} />
                             <p className="text-sm font-medium text-muted-foreground">
                                 {feedback?.overallScore ? `${feedback.overallScore}/100` :
-                                    (props as any).averageScore ? `Avg: ${(props as any).averageScore}/100` : "---/100"}
+                                    averageScore ? `Avg: ${averageScore}/100` : "---/100"}
                             </p>
                         </div>
                     </div>

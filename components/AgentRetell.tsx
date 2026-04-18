@@ -13,17 +13,11 @@ enum CallStatus {
     FINISHED = "FINISHED",
 }
 
-interface SavedMessages {
-    role: 'user' | 'system' | 'assistant',
-    content: string;
-}
-
 const AgentRetell = ({ userName, userId, type, interviewId, questions }: AgentProps) => {
     const router = useRouter();
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isUserSpeaking, setIsUserSpeaking] = useState(false);
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
-    const [messages, setMessages] = useState<SavedMessages[]>([]);
     const [callEnded, setCallEnded] = useState(false);
     const [micPermission, setMicPermission] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
 
@@ -67,12 +61,6 @@ const AgentRetell = ({ userName, userId, type, interviewId, questions }: AgentPr
         const onUpdate = (update: any) => {
             // Handle transcript updates
             if (update.transcript) {
-                const newMessage = {
-                    role: update.transcript.role === 'agent' ? 'assistant' : 'user',
-                    content: update.transcript.content
-                } as SavedMessages;
-                setMessages(prev => [...prev, newMessage]);
-
                 if (update.transcript.role === 'user') {
                     setIsUserSpeaking(true);
                     // Reset user speaking state after 2 seconds of silence
@@ -170,7 +158,6 @@ const AgentRetell = ({ userName, userId, type, interviewId, questions }: AgentPr
         retellClient.stopCall();
     };
 
-    const latestMessage = messages[messages.length - 1]?.content;
     const isCallInactiveOrFinished = callStatus === CallStatus.INACTIVE || callStatus === CallStatus.FINISHED;
 
     return (

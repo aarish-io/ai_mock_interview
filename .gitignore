@@ -61,6 +61,12 @@ next-env.d.ts
 logs
 *.log
 
+# local assistant/tool artifacts
+/.agent/
+/.zencoder/
+/graphify-out/
+/AI_HANDOFF.md
+
 # OS generated files
 .DS_Store
 .DS_Store?
