@@ -194,11 +194,19 @@
     @apply w-fit !bg-gradient-to-r !from-[#f472b6] !to-[#a855f7] !text-white hover:!from-[#ec4899] hover:!to-[#9333ea] !rounded-full !font-bold px-5 cursor-pointer min-h-10;
   }
   .btn-secondary {
-    @apply w-fit !bg-white !text-[#a855f7] hover:!bg-[#fce7f3] !border !border-[#e9d5ff] !rounded-full !font-bold px-5 cursor-pointer min-h-10;
+    @apply w-fit !text-[#a855f7] !rounded-full !font-bold px-5 cursor-pointer min-h-10;
+    background-color: var(--surface-1) !important;
+    border: 1px solid var(--surface-border) !important;
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--surface-strong) !important;
   }
 
   .btn-upload {
-    @apply bg-white rounded-full min-h-12 px-5 cursor-pointer border border-[#e9d5ff] overflow-hidden;
+    @apply rounded-full min-h-12 px-5 cursor-pointer overflow-hidden;
+    background-color: var(--surface-1);
+    border: 1px solid var(--surface-border);
   }
 
   .card-border {
@@ -212,8 +220,8 @@
 
   .nav-shell {
     @apply rounded-2xl border sticky top-4 z-40;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), var(--surface-strong));
-    border-color: #d8b4fe;
+    background: linear-gradient(180deg, var(--surface-overlay), var(--surface-strong));
+    border-color: var(--surface-border);
     box-shadow: var(--elevation-nav);
     backdrop-filter: blur(8px);
   }
@@ -226,7 +234,9 @@
     }
 
     .input {
-      @apply !bg-white !rounded-full !min-h-12 !px-5 placeholder:!text-light-400 !border !border-[#e9d5ff];
+      @apply !rounded-full !min-h-12 !px-5 placeholder:!text-light-400;
+      background-color: var(--surface-1) !important;
+      border: 1px solid var(--surface-border) !important;
     }
 
     .btn {
@@ -320,8 +330,8 @@
 
   .card-interview {
     @apply rounded-2xl min-h-full flex flex-col p-6 relative overflow-hidden gap-10 justify-between text-foreground;
-    background: linear-gradient(180deg, #ffffff, var(--surface-3));
-    border: 1px solid #d8b4fe;
+    background: linear-gradient(180deg, var(--surface-1), var(--surface-3));
+    border: 1px solid var(--surface-border);
     box-shadow: var(--elevation-soft);
 
     .badge-text {
