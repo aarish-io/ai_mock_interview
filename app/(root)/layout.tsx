@@ -12,10 +12,10 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
     if (!isUserAuthenticated) redirect('/sign-in');
     return (
         <div className="root-layout" >
-            <nav className="flex justify-between items-center w-full px-6 py-4 bg-dark-200 border-b border-dark-100">
+            <nav className="nav-shell flex justify-between items-center w-full px-6 py-4">
                 <Link href="/" className="flex items-center gap-2">
                     <Image src="/logo.svg" alt="logo" width={38} height={32} />
-                    <h2 className="text-primary-100 font-bold text-lg">PrepWise</h2>
+                    <h2 className="text-foreground font-bold text-lg">Intervio</h2>
                 </Link>
                 <UserMenu />
             </nav>

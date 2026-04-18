@@ -27,7 +27,7 @@ const Page = async () => {
             <section className="card-cta">
                 <div className="flex flex-col gap-2 max-w-lg">
                     <h2>Get Interview Ready With AI Powered Production & Practice</h2>
-                    <p className="text-primary-100">Practice on real interview questions and get instant feedback</p>
+                    <p className="text-muted-foreground">Practice on real interview questions and get instant feedback</p>
 
                     <div className="flex gap-4 items-center max-sm:flex-col w-full mt-4">
                         <Button asChild className="btn-primary w-full sm:w-fit">
@@ -60,7 +60,7 @@ const Page = async () => {
                             <InterviewCard {...interview} key={interview.id} />
                         ))
                     ) : (
-                        <p className="text-light-400">You haven&apos;t generated any interviews yet.</p>
+                        <p className="text-muted-foreground">You haven&apos;t generated any interviews yet.</p>
                     )}
                 </div>
             </section>
@@ -78,7 +78,7 @@ const Page = async () => {
                             <InterviewCard {...interview} key={`completed-${interview.id}`} />
                         ))
                     ) : (
-                        <p className="text-light-400">You haven&apos;t completed any interviews yet.</p>
+                        <p className="text-muted-foreground">You haven&apos;t completed any interviews yet.</p>
                     )}
                 </div>
             </section>
@@ -92,7 +92,7 @@ const Page = async () => {
                             <InterviewCard {...interview} key={`trending-${interview.id}`} />
                         ))
                     ) : (
-                        <p className="text-light-400">No public interviews available right now.</p>
+                        <p className="text-muted-foreground">No public interviews available right now.</p>
                     )}
                 </div>
             </section>

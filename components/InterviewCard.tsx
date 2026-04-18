@@ -21,26 +21,26 @@ const InterviewCard = ({ id, userId, role, type, techstack, createdAt, feedback,
                     <Image src={getRandomInterviewCover()} alt="cover" width={90} height={90}
                         className="object-fit rounded-full size-[90px]" />
 
-                    <h3 className="mt-5 capitalize">
+                    <h3 className="mt-5 capitalize text-foreground">
                         {role} Interview
                     </h3>
 
-                    <div className="flex flex-row gap-5 mt-3">
-                        <div className="flex flex-row gap-2">
+                    <div className="flex flex-row gap-5 mt-3 text-muted-foreground">
+                        <div className="flex flex-row gap-2 items-center">
                             <Image src="/calendar.svg" alt="calendar" width={22} height={22} />
-                            <p>{formattedDate}</p>
+                            <p className="text-muted-foreground">{formattedDate}</p>
                         </div>
 
-                        <div className="flex flex-row gap-2">
+                        <div className="flex flex-row gap-2 items-center">
                             <Image src="/star.svg" alt="star" width={22} height={22} />
-                            <p className="text-sm font-medium">
+                            <p className="text-sm font-medium text-muted-foreground">
                                 {feedback?.overallScore ? `${feedback.overallScore}/100` :
                                     (props as any).averageScore ? `Avg: ${(props as any).averageScore}/100` : "---/100"}
                             </p>
                         </div>
                     </div>
 
-                    <p className="line-clamp-2">
+                    <p className="line-clamp-2 text-foreground/80">
                         {feedback?.overallFeedback || "No user feedback yet."}
                     </p>
                 </div>
