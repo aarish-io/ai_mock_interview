@@ -5,6 +5,7 @@ import { generateObject } from 'ai';
 import { z } from 'zod';
 import PDFParser from "pdf2json";
 
+
 const analysisSchema = z.object({
     atsScore: z.number().describe('ATS score from 0 to 100 based on keyword matching and formatting'),
     summary: z.string().describe('Professional summary of the candidate'),

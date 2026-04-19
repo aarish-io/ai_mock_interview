@@ -8,7 +8,13 @@ const DisplayTechIcons = async ({techStack}:TechIconProps) => {
     return (
         <div className="flex flex-row">
             {techIcons.slice(0,3).map(({tech,url},index)=>(
-                <div  key ={tech} className={cn("relative group bg-dark-300 flex-center rounded-full p-2",index>=1 && "-ml-3")}>
+                <div
+                    key={tech}
+                    className={cn(
+                        "relative group flex-center rounded-full p-2 bg-[#fffafc] dark:bg-zinc-700 border border-[#e9d5ff] dark:border-zinc-600 shadow-sm",
+                        index >= 1 && "-ml-3"
+                    )}
+                >
                     <span className="tech-tooltip">{tech}</span>
                     <Image src={url} alt={tech} width={100} height={100} className="size-5"/>
                 </div>

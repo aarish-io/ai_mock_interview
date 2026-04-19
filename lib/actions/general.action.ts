@@ -1,5 +1,16 @@
 import { db } from "@/firebase/admin";
 
+type TrendingInterviewRow = {
+    id: string;
+    createdAt?: string;
+    averageScore?: number | null;
+    stats?: {
+        totalAttempts?: number;
+        averageScore?: number;
+    };
+    [key: string]: unknown;
+};
+
 export async function getInterviewsByUserId(userId: string): Promise<Interview[] | null> {
     if (!userId) return [];
 
@@ -36,7 +47,7 @@ export async function getInterviewsByUserId(userId: string): Promise<Interview[]
         } as Interview;
     }));
 
-    return interviewsWithFeedback;
+    return interviewsWithFeedback as unknown as Interview[];
 }
 
 export async function getLatestInterviews(params: GetLatestInterviewsParams): Promise<Interview[] | null> {
@@ -70,10 +81,10 @@ export async function getLatestInterviews(params: GetLatestInterviewsParams): Pr
             ...doc.data(),
             averageScore: doc.data().stats?.averageScore || null,
             feedback: userFeedback // Add user's feedback if they've taken it
-        } as any;
+        } as unknown as Interview;
     }));
 
-    return interviewsWithFeedback;
+    return interviewsWithFeedback as unknown as Interview[];
 }
 
 export async function getInterviewsById(id: string): Promise<Interview | null> {
@@ -110,31 +121,35 @@ export async function getCompletedInterviews(userId: string): Promise<Interview[
 }
 
 export async function getTrendingInterviews(limit: number = 5): Promise<Interview[] | null> {
+    const safeLimit = Math.max(1, limit);
+    const mapRows = (docs: FirebaseFirestore.QueryDocumentSnapshot[]) => docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        averageScore: doc.data().stats?.averageScore || null
+    })) as TrendingInterviewRow[];
+
     try {
         const interviews = await db.collection('interviews')
-            .orderBy('stats.totalAttempts', 'desc')
             .where('finalized', '==', true)
-            .limit(limit)
+            .orderBy('stats.totalAttempts', 'desc')
+            .limit(safeLimit)
             .get();
 
-        return interviews.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            averageScore: doc.data().stats?.averageScore || null
-        })) as unknown as Interview[];
+        const trendingRows = mapRows(interviews.docs);
+
+        return trendingRows
+            .slice(0, safeLimit) as unknown as Interview[];
     } catch (error) {
-        console.warn("Trending fetch failed (likely missing index), falling back to latest", error);
-        // Fallback to latest if stats.totalAttempts index doesn't exist
+        console.warn("Trending query unavailable, falling back to bounded latest finalized interviews", error);
         const interviews = await db.collection('interviews')
-            .orderBy('createdAt', 'desc')
             .where('finalized', '==', true)
-            .limit(limit)
+            .orderBy('createdAt', 'desc')
+            .limit(safeLimit * 10)
             .get();
-        
-        return interviews.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            averageScore: doc.data().stats?.averageScore || null
-        })) as unknown as Interview[];
+
+        const latestRows = mapRows(interviews.docs);
+
+        return latestRows
+            .slice(0, safeLimit) as unknown as Interview[];
     }
 }
