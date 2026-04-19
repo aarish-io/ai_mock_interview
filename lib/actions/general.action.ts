@@ -121,7 +121,7 @@ export async function getCompletedInterviews(userId: string): Promise<Interview[
 }
 
 export async function getTrendingInterviews(limit: number = 5): Promise<Interview[] | null> {
-    const getAttemptCount = (item: TrendingInterviewRow) => item.stats?.totalAttempts ?? 0;
+    const safeLimit = Math.max(1, limit);
     const mapRows = (docs: FirebaseFirestore.QueryDocumentSnapshot[]) => docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -132,25 +132,24 @@ export async function getTrendingInterviews(limit: number = 5): Promise<Intervie
         const interviews = await db.collection('interviews')
             .where('finalized', '==', true)
             .orderBy('stats.totalAttempts', 'desc')
-            .limit(limit)
+            .limit(safeLimit)
             .get();
 
         const trendingRows = mapRows(interviews.docs);
 
         return trendingRows
-            .sort((a, b) => getAttemptCount(b) - getAttemptCount(a)) as unknown as Interview[];
+            .slice(0, safeLimit) as unknown as Interview[];
     } catch (error) {
         console.warn("Trending query unavailable, falling back to bounded latest finalized interviews", error);
         const interviews = await db.collection('interviews')
             .where('finalized', '==', true)
             .orderBy('createdAt', 'desc')
-            .limit(Math.max(limit * 10, limit))
+            .limit(safeLimit * 10)
             .get();
 
         const latestRows = mapRows(interviews.docs);
 
         return latestRows
-            .sort((a, b) => getAttemptCount(b) - getAttemptCount(a))
-            .slice(0, limit) as unknown as Interview[];
+            .slice(0, safeLimit) as unknown as Interview[];
     }
 }
