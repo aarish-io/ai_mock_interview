@@ -34,7 +34,7 @@ export async function analyzeResume(formData: FormData) {
 
         // Parse PDF using pdf2json
         const resumeText = await new Promise<string>((resolve, reject) => {
-            const pdfParser = new PDFParser(null, 1); // 1 = Text Content Only
+            const pdfParser = new PDFParser(undefined, false); // false = include layout, true = text only
 
             pdfParser.on("pdfParser_dataError", (errData: any) => {
                 console.error("PDF Parser Error:", errData);

@@ -37,8 +37,8 @@ export const getTechLogos = async (techArray: string[] | string | undefined) => 
       tech,
       url: `${techIconBaseURL}/${normalized}/${normalized}-original.svg`,
     };
-  }).filter(Boolean); // Remove any null items
-  
+  }).filter((item): item is { tech: string; url: string } => item !== null); // Remove any null items with proper type guard
+
   const results = await Promise.all(
     logoURLs.map(async ({ tech, url }) => ({
       tech,

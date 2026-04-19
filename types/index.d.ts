@@ -1,10 +1,10 @@
-interface UserFeedback{
+export interface UserFeedback {
   id: string;
   interviewId: string;
   userId: string;
-   overallScore: number;
+  overallScore: number;
   overallFeedback: string;
-  answers:{
+  answers: {
     question: string;
     score: number;
     feedback: string;
@@ -14,8 +14,7 @@ interface UserFeedback{
   }[];
   createdAt: string;
 }
-
-interface InterviewStats{
+export interface InterviewStats {
   interveiwId: string;
   totalAttempts: number;
   averageScore: number;
@@ -28,16 +27,13 @@ interface InterviewStats{
   };
   lastUpdated: string;
 }
-
-interface ScoreComparison{
+export interface ScoreComparison {
   userScore: number;
   averageScore: number;
   percentile: number;
   totalAttempts: number;
 }
-
-
-interface Feedback {
+export interface Feedback {
   overallScore: number;
   overallFeedback: string;
   answers: {
@@ -50,13 +46,12 @@ interface Feedback {
   }[];
   createdAt?: string;
 }
-
-interface Interview {
+export interface Interview {
   id: string;
   role: string;
   level: string;
   questions: string[];
-  techstack: string[];
+  techStack: string[];
   createdAt: string;
   userId: string;
   type: string;
@@ -64,37 +59,32 @@ interface Interview {
   feedback?: Feedback;
   callId?: string;
 }
-
-interface CreateFeedbackParams {
+export interface CreateFeedbackParams {
   interviewId: string;
   userId: string;
   transcript: { role: string; content: string }[];
   feedbackId?: string;
 }
-
-interface User {
+export interface User {
   name: string;
   email: string;
   id: string;
 }
-
-interface InterviewCardProps {
+export interface InterviewCardProps {
   id?: string;
   role: string;
   type: string;
-  techstack: string[];
+  techStack: string[];
   createdAt?: string;
   feedback?: Feedback;
 }
-
-interface Message {
+export interface Message {
   type: string;
   transcriptType?: string;
   role?: 'user' | 'system' | 'assistant';
   transcript?: string;
 }
-
-interface AgentProps {
+export interface AgentProps {
   userName: string;
   userId?: string;
   interviewId?: string;
@@ -103,45 +93,37 @@ interface AgentProps {
   questions?: string[];
   interview?: Interview;
 }
-
-interface RouteParams {
+export interface RouteParams {
   params: Promise<Record<string, string>>;
   searchParams: Promise<Record<string, string>>;
 }
-
-interface GetFeedbackByInterviewIdParams {
+export interface GetFeedbackByInterviewIdParams {
   interviewId: string;
   userId: string;
 }
-
-interface GetLatestInterviewsParams {
+export interface GetLatestInterviewsParams {
   userId: string;
   limit?: number;
 }
-
-interface SignInParams {
+export interface SignInParams {
   email: string;
   idToken: string;
 }
-
-interface SignUpParams {
+export interface SignUpParams {
   uid: string;
   name: string;
   email: string;
   password: string;
 }
-
-type FormType = "sign-in" | "sign-up";
-
-interface InterviewFormProps {
+export type FormType = "sign-in" | "sign-up";
+export interface InterviewFormProps {
   interviewId: string;
   role: string;
   level: string;
   type: string;
-  techstack: string[];
+  techStack: string[];
   amount: number;
 }
-
-interface TechIconProps {
+export interface TechIconProps {
   techStack: string[];
 }
