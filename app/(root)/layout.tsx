@@ -14,7 +14,7 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
         <div className="root-layout" >
             <nav className="nav-shell flex justify-between items-center w-full px-6 py-4">
                 <Link href="/" className="flex items-center gap-2">
-                    <Image src="/logo.svg" alt="logo" width={38} height={32} />
+                    <Image src="/logo.svg" alt="logo" width={38} height={38} />
                     <h2 className="text-foreground font-bold text-lg">Intervio</h2>
                 </Link>
                 <UserMenu />
