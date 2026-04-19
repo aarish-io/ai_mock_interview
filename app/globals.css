@@ -230,7 +230,7 @@
     @apply w-full;
 
     .label {
-      @apply !text-light-100 !font-semibold;
+      @apply !text-foreground !font-semibold;
     }
 
     .input {
