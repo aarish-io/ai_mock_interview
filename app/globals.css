@@ -228,11 +228,11 @@
 
   .form {
     .label {
-      `@apply` !text-foreground !font-semibold;
+      @apply !text-foreground !font-semibold;
     }
 
     .input {
-      `@apply` !rounded-full !min-h-12 !px-5 placeholder:!text-muted-foreground;
+      @apply !rounded-full !min-h-12 !px-5 placeholder:!text-muted-foreground;
 
       background-color: var(--surface-1) !important;
       border: 1px solid var(--surface-border) !important;
