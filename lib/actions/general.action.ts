@@ -121,36 +121,36 @@ export async function getCompletedInterviews(userId: string): Promise<Interview[
 }
 
 export async function getTrendingInterviews(limit: number = 5): Promise<Interview[] | null> {
+    const getAttemptCount = (item: TrendingInterviewRow) => item.stats?.totalAttempts ?? 0;
+    const mapRows = (docs: FirebaseFirestore.QueryDocumentSnapshot[]) => docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        averageScore: doc.data().stats?.averageScore || null
+    })) as TrendingInterviewRow[];
+
     try {
         const interviews = await db.collection('interviews')
             .where('finalized', '==', true)
+            .orderBy('stats.totalAttempts', 'desc')
+            .limit(limit)
             .get();
 
-        const getAttemptCount = (item: TrendingInterviewRow) => item.stats?.totalAttempts ?? 0;
-        const trendingRows = interviews.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            averageScore: doc.data().stats?.averageScore || null
-        })) as TrendingInterviewRow[];
+        const trendingRows = mapRows(interviews.docs);
 
         return trendingRows
-            .sort((a, b) => getAttemptCount(b) - getAttemptCount(a))
-            .slice(0, limit) as unknown as Interview[];
+            .sort((a, b) => getAttemptCount(b) - getAttemptCount(a)) as unknown as Interview[];
     } catch (error) {
-        console.warn("Trending fetch failed, falling back to latest finalized interviews", error);
+        console.warn("Trending query unavailable, falling back to bounded latest finalized interviews", error);
         const interviews = await db.collection('interviews')
             .where('finalized', '==', true)
+            .orderBy('createdAt', 'desc')
+            .limit(Math.max(limit * 10, limit))
             .get();
 
-        const getCreatedAtTime = (item: TrendingInterviewRow) => new Date(item.createdAt ?? 0).getTime();
-        const latestRows = interviews.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            averageScore: doc.data().stats?.averageScore || null
-        })) as TrendingInterviewRow[];
+        const latestRows = mapRows(interviews.docs);
 
         return latestRows
-            .sort((a, b) => getCreatedAtTime(b) - getCreatedAtTime(a))
+            .sort((a, b) => getAttemptCount(b) - getAttemptCount(a))
             .slice(0, limit) as unknown as Interview[];
     }
 }
